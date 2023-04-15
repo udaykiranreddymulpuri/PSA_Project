@@ -24,6 +24,9 @@ public class Edge  {
 		return new Edge(from, to, weight);
 	}
 
+	public Double getWeight() {
+		return weight;
+	}
 	@Override
 	public String toString() {
 		return "Edge [from=" + from + ", to=" + to + ", weight=" + weight + "]";
