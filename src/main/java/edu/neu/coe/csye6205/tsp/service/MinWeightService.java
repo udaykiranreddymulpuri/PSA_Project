@@ -1,7 +1,7 @@
 package edu.neu.coe.csye6205.tsp.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -15,95 +15,114 @@ import java.util.Stack;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import edu.neu.coe.csye6205.tsp.model.Graph;
+import edu.neu.coe.csye6205.tsp.model.GraphDto;
+import edu.neu.coe.csye6205.tsp.model.MstTour;
 import edu.neu.coe.csye6205.tsp.model.Route;
-import edu.neu.coe.csye6205.tsp.repository.RouteWeightRepository;
+import edu.neu.coe.csye6205.tsp.model.TspTour;
 import edu.neu.coe.csye6205.tsp.util.Edge;
 import edu.neu.coe.csye6205.tsp.util.UnionFind;
 
 @Service
 public class MinWeightService {
 
+//	@Autowired
+//	RouteWeightRepository routeRepo;
+
 	@Autowired
-	RouteWeightRepository routeRepo;
+	TwoOptService opt2Service;
 	
+	@Autowired
+	ThreeOptService opt3Service;
+	
+	@Autowired
+	ExcelFetchRouteService excelFetchService;
+	
+	private int v = 585;
 
-//	int V = 31;
-
+	public GraphDto InitialzeGraph(int size) {
+		Graph graph = new Graph(size);
+		List<Edge> edges = new ArrayList<>();
+		// uncomment if you wanna execute using DB
+//		List<Route> routes = routeRepo.findAll();
+		List<Route> routes = new ArrayList<>();
+		try {
+			routes = excelFetchService.fetchExcelData();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		routes.forEach(r -> {
+			if (r.getFromLoc() <= size - 1 && r.getToLoc() <= size - 1) {
+				graph.addVertex(r.getFromLoc(), r.getToLoc(), r.getWeight());
+				edges.add(new Edge(r.getFromLoc(), r.getToLoc(), r.getWeight()));
+			}
+		});
+		GraphDto graphDto = new GraphDto(graph, edges);
+		return graphDto;
+	}
+	
 	public void findPath() {
 		// TODO Auto-generated method stub
-		Set<Edge> Edges = new HashSet<>();
-		List<Route> routes = routeRepo.findAll();
-		routes.forEach(r -> {
-			Edge e = new Edge(r.getFromLoc(), r.getToLoc(), r.getWeight());
-			if (r.getFromLoc() <= 20 && r.getToLoc() <= 20)
-				Edges.add(e);
-		});
-		List<Edge> edges = new ArrayList<>();
-		Edges.forEach(e -> {
-			edges.add(e);
-		});
-		List<Edge> mst = minimumSpanningTree(edges);
-		for (Edge e : mst) {
-			System.out.println(e.from + " - " + e.to + ": " + e.weight);
-		}
-
-		Set<Integer> oddver = oddDegreeVertices(mst);
-		System.out.println(oddver);
-		System.out.println("************");
-//		List<Edge> updateEdge=new ArrayList<>();
-//		for(int i=0;i<edges.size();i++) {
-//			boolean b1=true;
-//			for(int j=0;j<mst.size();j++) {
-//				if(edges.get(i).from==mst.get(j).from && edges.get(i).to==mst.get(j).to)
-//					b1=false;
-//			}
-//			if(b1)
-//				updateEdge.add(edges.get(i));
+//		Graph graph = new Graph(this.v);
+//		List<Edge> edges = new ArrayList<>();
+		GraphDto graphDto=InitialzeGraph(this.v);
+		Graph graph=graphDto.getGraph();
+		List<Edge> edges =graphDto.getEdges();
+		// uncomment if you wanna execute using DB
+//		List<Route> routes = routeRepo.findAll();
+//		List<Route> routes = new ArrayList<>();
+//		try {
+//			routes = excelFetchService.fetchExcelData();
+//		} catch (IOException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
 //		}
-//		System.out.println("updated edge");
-//		System.out.println(updateEdge);
-		List<Edge> mst1 = minimumWeightPerfectMatching1(oddver, edges);
-//		System.out.println("test method start********");
-//		minimumWeightPerfectMatching1(oddver, edges);
-//		System.out.println("test method end********");
-		for (Edge e : mst1) {
-			System.out.println(e.from + " - " + e.to + ": " + e.weight);
-		}
-		System.out.println("************");
-
-		List<Edge> mst2 = combineGraphs(mst, mst1);
-		for (Edge e : mst2) {
-			System.out.println(e.from + " - " + e.to + ": " + e.weight);
-		}
-		System.out.println("************");
-
-		List<Integer> eulerianTour = eulerianTour(mst2);
-		System.out.println(eulerianTour);
-		System.out.println("************");
-		Set<Integer> hs = new HashSet<>();
-		List<Edge> outPath = shortcutTour(eulerianTour, mst2);
-		outPath.forEach(o -> {
-			if (!hs.contains(o.from))
-				hs.add(o.from);
-
-			if (!hs.contains(o.to))
-				hs.add(o.to);
-
+//		routes.forEach(r -> {
+//			if (r.getFromLoc() <= this.v - 1 && r.getToLoc() <= this.v - 1) {
+//				graph.addVertex(r.getFromLoc(), r.getToLoc(), r.getWeight());
+//				edges.add(new Edge(r.getFromLoc(), r.getToLoc(), r.getWeight()));
+//			}
+//		});
+//		System.out.println(edges);
+		System.out.println("No of Vertexs "+this.v);
+		System.out.println("***************************************************************");
+		MstTour mstTour = minimumSpanningTree(edges);
+		List<Integer> oddver = oddDegreeVertices(mstTour.getEdges());
+		System.out.println("***************************************************************");
+		System.out.println("List of Odd vertices "+oddver);
+		System.out.println(oddver);
+		System.out.println("***************************************************************");
+		List<Edge> minWeightMatch = findMinimumWeightMatching(oddver, graph);
+//		System.out.println("List of min weight matching pairs "+minWeightMatch);
+//		System.out.println(minWeightMatch);
+//		System.out.println("***************************************************************");
+		List<Edge> combineGraph = combineGraphs(mstTour.getEdges(), minWeightMatch);
+		Graph mstAndminWeightCombinedGraph = new Graph(this.v);
+		combineGraph.forEach(e -> {
+			mstAndminWeightCombinedGraph.addVertex(e.from, e.to, e.weight);
 		});
-		System.out.println("vertex count " + hs.size());
-		System.out.println(outPath);
-		double totalWeight = 0;
-		for (int i = 0; i < outPath.size(); i++) {
-			if (outPath.get(i).weight != null)
-				totalWeight += outPath.get(i).weight;
-		}
-		System.out.println(totalWeight);
-
+		List<Integer> eulerianTour = findEulerianTour(mstAndminWeightCombinedGraph, 0);
+		System.out.println("  Eulerian Tour ");
+		System.out.println(eulerianTour);
+		System.out.println("***************************************************************");
+		TspTour tsp = getTspPath(0, graph, eulerianTour);
+		System.out.println(" Tsp Weight " + tsp.getLength());
+		System.out.println(" Tsp Tour "+tsp.getTour());
+		System.out.println("***************************************************************");
+		TspTour tsp2optTour = opt2Service.twoOpt(tsp, graph);
+		System.out.println(" 2 Opt Tsp Weight " + tsp2optTour.getLength());
+		System.out.println(" 2 Opt Tsp Tour "+tsp2optTour.getTour());
+		System.out.println("***************************************************************");
+		TspTour tsp3optTour = opt3Service.threeOpt(tsp, graph);
+		System.out.println(" 3 Opt Tsp Weight " + tsp3optTour.getLength());
+		System.out.println(" 3 Opt Tsp Tour "+tsp3optTour.getTour());
+		
 	}
 
-//  Kruskal's Algorithm
-	public List<Edge> minimumSpanningTree(List<Edge> edges) {
+	public MstTour minimumSpanningTree(List<Edge> edges) {
 		List<Edge> sortedEdges = edges;
+		double weight = 0;
 		Collections.sort(sortedEdges, new Comparator<Edge>() {
 			@Override
 			public int compare(Edge edge1, Edge edge2) {
@@ -122,200 +141,74 @@ public class MinWeightService {
 
 			}
 		});
-		System.out.println(sortedEdges);
 		List<Edge> mst = new ArrayList<>();
 		UnionFind uf = new UnionFind(edges.size());
 		for (Edge edge : sortedEdges) {
 			if (!uf.connected(edge.from, edge.to)) {
 				mst.add(edge);
+				weight += edge.getWeight();
 				uf.union(edge.from, edge.to);
 			}
 		}
-		return mst;
+		System.out.println("Minimum Spaninng Tree weight "+weight);
+		MstTour mstTour=new MstTour(mst, weight);
+		return mstTour;
 	}
 
-	Set<Integer> oddDegreeVertices(List<Edge> mst) {
+	List<Integer> oddDegreeVertices(List<Edge> mst) {
 		Map<Integer, Integer> degreeMap = new HashMap<>();
 		for (Edge e : mst) {
 			degreeMap.put(e.from, degreeMap.getOrDefault(e.from, 0) + 1);
 			degreeMap.put(e.to, degreeMap.getOrDefault(e.to, 0) + 1);
 		}
-		Set<Integer> oddVertices = new HashSet<>();
+		List<Integer> oddVertices = new ArrayList<>();
 		for (int vertex : degreeMap.keySet()) {
-			if (degreeMap.get(vertex) % 2 == 1) {
+			if (degreeMap.get(vertex) % 2 == 1 && !oddVertices.contains(vertex)) {
 				oddVertices.add(vertex);
 			}
 		}
-		System.out.println(degreeMap);
-		System.out.println(degreeMap.size());
 		return oddVertices;
 	}
 
-	List<Edge> minimumWeightPerfectMatching(Set<Integer> oddVertices, List<Edge> edges) {
-		List<Edge> matching = new ArrayList<>();
-		Set<Integer> matchedVertices = new HashSet<>();
+	public List<Edge> findMinimumWeightMatching(List<Integer> points, Graph g) {
 		PriorityQueue<Edge> edgeQueue = new PriorityQueue<>(Comparator.comparingDouble(Edge::getWeight));
-		for(int i=0;i<edges.size();i++) {
-			edgeQueue.add(edges.get(i));
+		boolean[] matched = new boolean[this.v];
+		int sPoint;
+		int ePoint;
+		double weight;
+		for (int i = 0; i < points.size(); i++) {
+			for (int j = i + 1; j < points.size(); j++) {
+				sPoint = points.get(i);
+				ePoint = points.get(j);
+				weight = g.getDistanceBetweenPoints(sPoint, ePoint);
+				edgeQueue.offer(new Edge(points.get(i), points.get(j), weight));
+			}
 		}
-//		Map<Integer, Map<Integer, Double>> adjMap = util(edges);
-		boolean[] matched = new boolean[11];
-//		while (!edgeQueue.isEmpty()) {
-//            Edge edge = edgeQueue.poll();
-//            int index1 = edge.from;
-//            int index2 = edge.to;
-//
-//            if (!matched[index1] && !matched[index2]) {
-//                matched[index1] = true;
-//                matched[index2] = true;
-//                matching.add(edge);
-//                adjMap.get(edge.getU()).add(edge.getV());
-//                adjList.get(edge.getV()).add(edge.getU());
-//                Node start = g.getNode(edge.getU());
-//                Node end = g.getNode(edge.getV());
-//                double startXPoint = start.getX();
-//                double startYPoint = start.getY();
-//                double endXPoint = end.getX();
-//                double endYPoint = end.getY();
-//                try {
-//                    Thread.sleep(100);
-//                } catch (InterruptedException ex) {
-//                    ex.printStackTrace();
-//                }
-////                Platform.runLater(() -> {
-////                    gc.setStroke(Color.RED);
-////                    gc.strokeLine(startXPoint,startYPoint,endXPoint,endYPoint);
-////                });
-//            }
-//            if(matching.size() == points.size()/2)
-//                break;
-//        }
-//        g.setAdjList(adjList);
-        
-		for (int v : oddVertices) {
-//			if (matchedVertices.contains(v)) {
-//				// Skip this vertex if it has already been matched
-//				continue;
-//			}
+		List<List<Integer>> adjList = g.getAdjList();
+		List<Edge> matching = new ArrayList<>();
+		while (!edgeQueue.isEmpty()) {
+			Edge edge = edgeQueue.poll();
+			int index1 = edge.from;
+			int index2 = edge.to;
 
-			Edge minEdge = null;
-			for (Edge e : edgeQueue) {
-				if ((e.from == v || e.to == v)) {
-//					if ((e.from == v || e.to == v) && oddVertices.contains(e.from) && oddVertices.contains(e.to))
-					if (minEdge == null || e.weight < minEdge.weight) {
-						minEdge = e;
-					}
+			if (!matched[index1] && !matched[index2]) {
+				matched[index1] = true;
+				matched[index2] = true;
+				matching.add(edge);
+				adjList.get(edge.from).add(edge.to);
+				adjList.get(edge.from).add(edge.to);
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException ex) {
+					ex.printStackTrace();
 				}
 			}
-
-			if (minEdge != null&&!matched[minEdge.from]&&!matched[minEdge.to]) {
-				matched[minEdge.from]=true;
-				matched[minEdge.to]=true;
-				matching.add(minEdge);
-				matchedVertices.add(v);
-				matchedVertices.add(minEdge.from);
-				matchedVertices.add(minEdge.to);
-			}
+			if (matching.size() == points.size() / 2)
+				break;
 		}
-
-		oddVertices.removeAll(matchedVertices);
+		g.setAdjList(adjList);
 		return matching;
 	}
-	
-	List<Edge>  minimumWeightPerfectMatching1(Set<Integer> oddVertices, List<Edge> edges) {
-		int n=21;
-		List<Edge> edge=new ArrayList<>();
-		double[][] graph=new double[n][n];
-		for(int i=0;i<edges.size();i++) {
-			graph[edges.get(i).from][edges.get(i).to]=edges.get(i).weight;
-			graph[edges.get(i).to][edges.get(i).from]=edges.get(i).weight;
-		}
-		int[] matching = new int[n];
-        Arrays.fill(matching, -1);
-
-        for (int i = 0; i < n; i++) {
-            if (matching[i] == -1) {
-                augmentPath(i, graph, matching, new boolean[n]);
-            }
-        }
-
-        // print the minimum weight matching
-        for (int i = 0; i < n; i++) {
-            if (matching[i] != -1) {
-                System.out.println(i + " - " + matching[i]+" "+graph[i][matching[i]]);
-                edge.add(new Edge(i,matching[i],graph[i][matching[i]]));
-            }
-        }
-        return edge;
-	}
-	public static boolean augmentPath(int u, double[][] graph, int[] matching, boolean[] visited) {
-        visited[u] = true;
-
-        for (int v = 0; v < graph.length; v++) {
-            if (graph[u][v] != 0 && !visited[v]) {
-                visited[v] = true;
-
-                if (matching[v] == -1 || augmentPath(matching[v], graph, matching, visited)) {
-                    matching[v] = u;
-                    matching[u] = v;
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-//	public static List<Edge> findMinimumWeightMatching(List<Node> points, Graph g, GraphicsContext gc) {
-//        PriorityQueue<Edge> edgeQueue = new PriorityQueue<>(Comparator.comparingDouble(Edge::getWeight));
-//        boolean[] matched = new boolean[g.getSize()];
-//        int sPoint;
-//        int ePoint;
-//        double weight;
-//        for (int i = 0; i < points.size(); i++) {
-//            for (int j = i + 1; j < points.size(); j++) {
-//                sPoint = points.get(i).getPos();
-//                ePoint = points.get(j).getPos();
-//                weight = g.getDistanceBetweenPoints(sPoint,ePoint);
-//                edgeQueue.offer(new Edge(points.get(i).getPos(), points.get(j).getPos(),weight));
-//            }
-//        }
-//        List<List<Integer>> adjList = g.getAdjList();
-//        List<Edge> matching = new ArrayList<>();
-//        
-//        while (!edgeQueue.isEmpty()) {
-//            Edge edge = edgeQueue.poll();
-//            int index1 = edge.getU();
-//            int index2 = edge.getV();
-//
-//            if (!matched[index1] && !matched[index2]) {
-//                matched[index1] = true;
-//                matched[index2] = true;
-//                matching.add(edge);
-//                adjList.get(edge.getU()).add(edge.getV());
-//                adjList.get(edge.getV()).add(edge.getU());
-//                Node start = g.getNode(edge.getU());
-//                Node end = g.getNode(edge.getV());
-//                double startXPoint = start.getX();
-//                double startYPoint = start.getY();
-//                double endXPoint = end.getX();
-//                double endYPoint = end.getY();
-//                try {
-//                    Thread.sleep(100);
-//                } catch (InterruptedException ex) {
-//                    ex.printStackTrace();
-//                }
-////                Platform.runLater(() -> {
-////                    gc.setStroke(Color.RED);
-////                    gc.strokeLine(startXPoint,startYPoint,endXPoint,endYPoint);
-////                });
-//            }
-//            if(matching.size() == points.size()/2)
-//                break;
-//        }
-//        g.setAdjList(adjList);
-//        return matching;
-//    }
-	
 
 	List<Edge> combineGraphs(List<Edge> mst, List<Edge> matching) {
 		Set<Edge> eulerianGraph = new HashSet<>(mst);
@@ -324,78 +217,16 @@ public class MinWeightService {
 		return eulerianGraphList;
 	}
 
-//	public List<Integer> eulerianTour(List<Edge> edges) {
-//		Map<Integer, List<Integer>> adjacencyList = new HashMap<>();
-//		for (Edge edge : edges) {
-//			adjacencyList.computeIfAbsent(edge.from, k -> new ArrayList<>()).add(edge.to);
-//			adjacencyList.computeIfAbsent(edge.to, k -> new ArrayList<>()).add(edge.from);
-//		}
-//		System.out.println(adjacencyList);
-//		int startVertex = Integer.MAX_VALUE;
-//		System.out.println("**eulerianTour start****");
-//		for(int i=0;i<adjacencyList.size();i++) {
-//			if(adjacencyList.get(i).size()<startVertex)
-//				startVertex=i;
-//			if(adjacencyList.get(i).size()%2==1)
-//				System.out.print(i+",  ");
-////			startVertex=Math.min(adjacencyList.get(i).size(), startVertex);
-//		}
-//		System.out.println("Start Vetex "+ startVertex);
-//		List<Integer> tour = new ArrayList<>();
-//		Stack<Integer> stack = new Stack<>();
-//		stack.push(startVertex);
-//		while (!stack.isEmpty()) {
-//			int u = stack.peek();
-//			List<Integer> neighbors = adjacencyList.get(u);
-//			if (neighbors != null && !neighbors.isEmpty()) {
-//				int v = neighbors.get(0);
-//				stack.push(v);
-//				adjacencyList.get(u).remove(Integer.valueOf(v));
-//				adjacencyList.get(v).remove(Integer.valueOf(u));
-//			} else {
-//				stack.pop();
-//				tour.add(u);
-//			}
-//		}
-//		return tour;
-//	}
-	public List<Integer> eulerianTour(List<Edge> edges) {
-		Map<Integer, List<Integer>> adjacencyList = new HashMap<>();
-		for (Edge edge : edges) {
-			adjacencyList.computeIfAbsent(edge.from, k -> new ArrayList<>()).add(edge.to);
-			adjacencyList.computeIfAbsent(edge.to, k -> new ArrayList<>()).add(edge.from);
-		}
-		System.out.println(adjacencyList);
-		int startVertex = Integer.MAX_VALUE;
-		System.out.println("**eulerianTour start****");
-		for (int i = 0; i < adjacencyList.size(); i++) {
-			if (adjacencyList.get(i).size() < startVertex)
-				startVertex = i;
-			if (adjacencyList.get(i).size() % 2 == 1)
-				System.out.print(i + ",  ");
-//			startVertex=Math.min(adjacencyList.get(i).size(), startVertex);
-		}
-		System.out.println("Start Vetex " + startVertex);
-		List<Integer> tour = new ArrayList<>();
-		Stack<Integer> stack = new Stack<>();
-		stack.push(startVertex);
-		while (!stack.isEmpty()) {
-			int u = stack.peek();
-			List<Integer> neighbors = adjacencyList.get(u);
-			if (neighbors != null && !neighbors.isEmpty()) {
-				int v = neighbors.get(0);
-				stack.push(v);
-				adjacencyList.get(u).remove(Integer.valueOf(v));
-				adjacencyList.get(v).remove(Integer.valueOf(u));
-			} else {
-				stack.pop();
-				tour.add(u);
+	static void dfs(Map<Integer, List<Edge>> adjacencyList, int startVertex, List<Integer> cycle) {
+		for (Edge x : adjacencyList.get(startVertex)) {
+			if (!cycle.contains(x.to)) {
+				cycle.add(x.to);
+				dfs(adjacencyList, x.to, cycle);
 			}
 		}
-		return tour;
 	}
 
-	public List<Edge> shortcutTour(List<Integer> eulerianTour, List<Edge> edges) {
+	public List<Edge> shortcutTour(List<Integer> eulerianTour, List<Edge> edges, Graph g) {
 		List<Edge> hamiltonianTour = new ArrayList<>();
 		Set<Integer> visited = new HashSet<>();
 		Map<Integer, Map<Integer, Double>> map = util(edges);
@@ -403,9 +234,9 @@ public class MinWeightService {
 		for (int i = 0; i < eulerianTour.size() - 1; i++) {
 			int u = eulerianTour.get(i);
 			int v = eulerianTour.get(i + 1);
-			System.out.println(u + " " + v);
 			if (!visited.contains(u)) {
-				hamiltonianTour.add(new Edge(u, v, map.get(u).get(v)));
+				System.out.println(u + "  -  " + v + " " + g.getDistanceBetweenPoints(u, v));
+				hamiltonianTour.add(new Edge(u, v, g.getDistanceBetweenPoints(u, v)));
 				visited.add(u);
 			}
 		}
@@ -435,6 +266,58 @@ public class MinWeightService {
 		}
 		System.out.println(map);
 		return map;
+	}
+
+	public static List<Integer> findEulerianTour(Graph g, int start) {
+		List<List<Integer>> adjList = g.getAdjList();
+		int n = adjList.size();
+		List<Integer> tour = new ArrayList<>();
+		Stack<Integer> stack = new Stack<>();
+		int[] degree = new int[n];
+		for (int i = 0; i < adjList.size(); i++) {
+			degree[i] = adjList.get(i).size();
+		}
+		stack.push(start);
+		while (!stack.isEmpty()) {
+			int v = stack.peek();
+			if (degree[v] == 0) {
+				tour.add(v);
+				stack.pop();
+			} else {
+				int t = adjList.get(v).remove(--degree[v]);
+				adjList.get(t).remove((Integer) (v));
+				degree[t]--;
+				stack.push(t);
+			}
+		}
+		return tour;
+	}
+
+	static TspTour getTspPath(int start, Graph g, List<Integer> tour) {
+		TspTour tspTour = new TspTour();
+		Graph tspGraph = new Graph(g.getV());
+		double tspWeight = 0.0;
+		boolean[] visited = new boolean[tour.size()];
+		visited[0] = true;
+		List<Integer> tspTourList = new ArrayList<>();
+		tspTourList.add(start);
+		int u = start;
+		int v;
+		for (int i = 1; i < tour.size(); i++) {
+			v = tour.get(i);
+			if (!visited[v] || i == tour.size() - 1) {
+				visited[tour.get(i)] = true;
+//	              System.out.println(u+" - "+v+" "+g.getDistanceBetweenPoints(u,v));
+				tspGraph.addVertex(u, v, g.getDistanceBetweenPoints(u, v));
+				tspWeight += g.getDistanceBetweenPoints(u, v);
+				tspTourList.add(v);
+				u = v;
+			}
+		}
+		tspTour.setTour(tspTourList);
+		tspTour.setLength(tspWeight);
+		tspTour.setGraph(tspGraph);
+		return tspTour;
 	}
 
 }

@@ -17,19 +17,20 @@ public class CsvReaderController {
 
 	@Autowired
 	CsvUtilService utilService;
-	
+
 	@GetMapping("/saveData")
-    public String saveExcelData() {
-    	System.out.println("In save Excel Data");
-    	try {
+	public String saveExcelData() {
+		System.out.println("In save Excel Data");
+		try {
 			List<Point> excelDataAsList = utilService.uploadExcelData();
 			System.out.println(excelDataAsList);
-			int noOfRecords = utilService.saveExcelData(excelDataAsList);
-			System.out.println(noOfRecords);
+//			int noOfRecords = utilService.saveExcelData(excelDataAsList);
+			utilService.savetoExcel(excelDataAsList);
+//			System.out.println(noOfRecords);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	return "success";
-    }
+		return "success";
+	}
 }

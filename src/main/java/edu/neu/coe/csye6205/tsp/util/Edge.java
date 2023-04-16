@@ -11,11 +11,6 @@ public class Edge  {
 		this.weight = weight;
 	}
 
-//	@Override
-//	public int compareTo(Edge other) {
-//		return Double.compare(this.weight, other.weight);
-//	}
-
 	public Edge reverse() {
 		return new Edge(to, from, weight);
 	}
@@ -23,10 +18,12 @@ public class Edge  {
 	public Edge toEdge() {
 		return new Edge(from, to, weight);
 	}
+	
 
 	public Double getWeight() {
 		return weight;
 	}
+
 	@Override
 	public String toString() {
 		return "Edge [from=" + from + ", to=" + to + ", weight=" + weight + "]";
