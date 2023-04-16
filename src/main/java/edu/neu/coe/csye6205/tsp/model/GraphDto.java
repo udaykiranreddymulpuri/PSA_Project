@@ -15,6 +15,22 @@ public class GraphDto {
 		this.graph = graph;
 		this.edges = edges;
 	}
+
+	public Graph getGraph() {
+		return graph;
+	}
+
+	public void setGraph(Graph graph) {
+		this.graph = graph;
+	}
+
+	public List<Edge> getEdges() {
+		return edges;
+	}
+
+	public void setEdges(List<Edge> edges) {
+		this.edges = edges;
+	}
 	
 	
 	

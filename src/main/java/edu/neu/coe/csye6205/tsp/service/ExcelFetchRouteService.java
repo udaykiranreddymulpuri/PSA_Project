@@ -17,7 +17,7 @@ import edu.neu.coe.csye6205.tsp.model.Route;
 @Service
 public class ExcelFetchRouteService {
 	
-	private String EXCEL_FILE_PATH = System.getProperty("user.dir")+"\\routes.xlsx";
+	private String EXCEL_FILE_PATH = System.getProperty("user.dir")+"//routes.xlsx";
 
 	Workbook workbook;
 

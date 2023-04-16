@@ -24,7 +24,7 @@ import edu.neu.coe.csye6205.tsp.model.Point;
 public class CsvUtilService {
 
 	
-	private String EXCEL_FILE_PATH = System.getProperty("user.dir")+"\\Data\\TspDataPoints.xlsx";
+	private String EXCEL_FILE_PATH = System.getProperty("user.dir")+"//Data//TspDataPoints.xlsx";
 	
 //	@Autowired
 //	CsvUtilRepository repo;

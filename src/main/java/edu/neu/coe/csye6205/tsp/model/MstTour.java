@@ -15,6 +15,18 @@ public class MstTour {
 		this.edges = edges;
 		this.length = length;
 	}
+	public List<Edge> getEdges() {
+		return edges;
+	}
+	public void setEdges(List<Edge> edges) {
+		this.edges = edges;
+	}
+	public double getLength() {
+		return length;
+	}
+	public void setLength(double length) {
+		this.length = length;
+	}
 	
 	
 }
