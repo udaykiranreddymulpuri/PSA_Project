@@ -19,4 +19,5 @@ public class RouteWeightController {
 		routeWeightService.calculateWeight();
 		return "Sucess";
 	}
+
 }
