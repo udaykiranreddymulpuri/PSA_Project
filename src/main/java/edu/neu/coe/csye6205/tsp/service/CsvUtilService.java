@@ -20,8 +20,9 @@ import edu.neu.coe.csye6205.tsp.repository.CsvUtilRepository;
 
 @Service
 public class CsvUtilService {
+	
 
-	private String EXCEL_FILE_PATH = "C:\\Users\\Anurag\\Downloads\\TSP\\TSP\\Data\\testdata1.xlsx";
+	private String EXCEL_FILE_PATH = "/PSA_Project/src/main/java/testdata.csv";
 	@Autowired
 	CsvUtilRepository repo;
 
