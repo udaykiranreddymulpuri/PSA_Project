@@ -1,6 +1,7 @@
 package edu.neu.coe.csye6205.tsp.service;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,8 +21,10 @@ import edu.neu.coe.csye6205.tsp.model.GraphDto;
 import edu.neu.coe.csye6205.tsp.model.MstTour;
 import edu.neu.coe.csye6205.tsp.model.Route;
 import edu.neu.coe.csye6205.tsp.model.TspTour;
+import edu.neu.coe.csye6205.tsp.model.Vertex;
 import edu.neu.coe.csye6205.tsp.util.Edge;
 import edu.neu.coe.csye6205.tsp.util.UnionFind;
+import edu.neu.coe.csye6205.tsp.util.VertexUtil;
 
 @Service
 public class MinWeightService {
@@ -31,13 +34,16 @@ public class MinWeightService {
 
 	@Autowired
 	TwoOptService opt2Service;
-	
+
 	@Autowired
 	ThreeOptService opt3Service;
-	
+
 	@Autowired
 	ExcelFetchRouteService excelFetchService;
-	
+
+	@Autowired
+	VertexUtil vertexUtil;
+
 	private int v = 585;
 
 	public GraphDto InitialzeGraph(int size) {
@@ -61,14 +67,17 @@ public class MinWeightService {
 		GraphDto graphDto = new GraphDto(graph, edges);
 		return graphDto;
 	}
-	
+
 	public void findPath() {
 		// TODO Auto-generated method stub
 //		Graph graph = new Graph(this.v);
 //		List<Edge> edges = new ArrayList<>();
-		GraphDto graphDto=InitialzeGraph(this.v);
-		Graph graph=graphDto.getGraph();
-		List<Edge> edges =graphDto.getEdges();
+		Timestamp start = new Timestamp(System.currentTimeMillis());
+		Map<Integer, String> vertexMap = vertexUtil.getVertexMapping();
+		List<Vertex> vertexList = new ArrayList<>();
+		GraphDto graphDto = InitialzeGraph(this.v);
+		Graph graph = graphDto.getGraph();
+		List<Edge> edges = graphDto.getEdges();
 		// uncomment if you wanna execute using DB
 //		List<Route> routes = routeRepo.findAll();
 //		List<Route> routes = new ArrayList<>();
@@ -84,14 +93,18 @@ public class MinWeightService {
 //				edges.add(new Edge(r.getFromLoc(), r.getToLoc(), r.getWeight()));
 //			}
 //		});
-//		System.out.println(edges);
-		System.out.println("No of Vertexs "+this.v);
+		System.out.println("***************** Start of Execution ********************");
+		System.out.println("No of Vertexs " + this.v);
 		System.out.println("***************************************************************");
 		MstTour mstTour = minimumSpanningTree(edges);
 		List<Integer> oddver = oddDegreeVertices(mstTour.getEdges());
+		oddver.forEach(oddVer -> {
+			Vertex v = new Vertex(oddVer, vertexMap.get(oddVer));
+			vertexList.add(v);
+		});
 		System.out.println("***************************************************************");
-		System.out.println("List of Odd vertices "+oddver);
-		System.out.println(oddver);
+		System.out.println("List of Odd vertices ");
+		System.out.println(vertexList);
 		System.out.println("***************************************************************");
 		List<Edge> minWeightMatch = findMinimumWeightMatching(oddver, graph);
 //		System.out.println("List of min weight matching pairs "+minWeightMatch);
@@ -104,20 +117,43 @@ public class MinWeightService {
 		});
 		List<Integer> eulerianTour = findEulerianTour(mstAndminWeightCombinedGraph, 0);
 		System.out.println("  Eulerian Tour ");
-		System.out.println(eulerianTour);
+		List<Vertex> EulerianVertexTour = new ArrayList<>();
+		eulerianTour.stream().forEach(e -> {
+			Vertex v = new Vertex(e, vertexMap.get(e));
+			EulerianVertexTour.add(v);
+		});
+		System.out.println(EulerianVertexTour);
 		System.out.println("***************************************************************");
 		TspTour tsp = getTspPath(0, graph, eulerianTour);
+		List<Vertex> tspVertexTour = new ArrayList<>();
+		tsp.getTour().stream().forEach(e -> {
+			Vertex v = new Vertex(e, vertexMap.get(e));
+			tspVertexTour.add(v);
+		});
 		System.out.println(" Tsp Weight " + tsp.getLength());
-		System.out.println(" Tsp Tour "+tsp.getTour());
+		System.out.println(" Tsp Tour " + tspVertexTour);
 		System.out.println("***************************************************************");
 		TspTour tsp2optTour = opt2Service.twoOpt(tsp, graph);
+		List<Vertex> opt2VertexTour = new ArrayList<>();
+		tsp2optTour.getTour().stream().forEach(e -> {
+			Vertex v = new Vertex(e, vertexMap.get(e));
+			opt2VertexTour.add(v);
+		});
 		System.out.println(" 2 Opt Tsp Weight " + tsp2optTour.getLength());
-		System.out.println(" 2 Opt Tsp Tour "+tsp2optTour.getTour());
+		System.out.println(" 2 Opt Tsp Tour " + opt2VertexTour);
 		System.out.println("***************************************************************");
 		TspTour tsp3optTour = opt3Service.threeOpt(tsp, graph);
+		List<Vertex> opt3VertexTour = new ArrayList<>();
+		tsp3optTour.getTour().stream().forEach(e -> {
+			Vertex v = new Vertex(e, vertexMap.get(e));
+			opt3VertexTour.add(v);
+		});
 		System.out.println(" 3 Opt Tsp Weight " + tsp3optTour.getLength());
-		System.out.println(" 3 Opt Tsp Tour "+tsp3optTour.getTour());
-		
+		System.out.println(" 3 Opt Tsp Tour " + opt3VertexTour);
+		System.out.println("Execution Time in Minutes: "+
+				(new Timestamp(System.currentTimeMillis()).getTime()-start.getTime())/60000 );
+		System.out.println("***************** End of Execution ********************");
+
 	}
 
 	public MstTour minimumSpanningTree(List<Edge> edges) {
@@ -150,12 +186,12 @@ public class MinWeightService {
 				uf.union(edge.from, edge.to);
 			}
 		}
-		System.out.println("Minimum Spaninng Tree weight "+weight);
-		MstTour mstTour=new MstTour(mst, weight);
+		System.out.println("Minimum Spaninng Tree weight " + weight);
+		MstTour mstTour = new MstTour(mst, weight);
 		return mstTour;
 	}
 
-	List<Integer> oddDegreeVertices(List<Edge> mst) {
+	public List<Integer> oddDegreeVertices(List<Edge> mst) {
 		Map<Integer, Integer> degreeMap = new HashMap<>();
 		for (Edge e : mst) {
 			degreeMap.put(e.from, degreeMap.getOrDefault(e.from, 0) + 1);
@@ -210,7 +246,7 @@ public class MinWeightService {
 		return matching;
 	}
 
-	List<Edge> combineGraphs(List<Edge> mst, List<Edge> matching) {
+	public List<Edge> combineGraphs(List<Edge> mst, List<Edge> matching) {
 		Set<Edge> eulerianGraph = new HashSet<>(mst);
 		eulerianGraph.addAll(matching);
 		List<Edge> eulerianGraphList = new ArrayList<>(eulerianGraph);
@@ -226,47 +262,23 @@ public class MinWeightService {
 		}
 	}
 
-	public List<Edge> shortcutTour(List<Integer> eulerianTour, List<Edge> edges, Graph g) {
-		List<Edge> hamiltonianTour = new ArrayList<>();
-		Set<Integer> visited = new HashSet<>();
-		Map<Integer, Map<Integer, Double>> map = util(edges);
-		System.out.println(map);
-		for (int i = 0; i < eulerianTour.size() - 1; i++) {
-			int u = eulerianTour.get(i);
-			int v = eulerianTour.get(i + 1);
-			if (!visited.contains(u)) {
-				System.out.println(u + "  -  " + v + " " + g.getDistanceBetweenPoints(u, v));
-				hamiltonianTour.add(new Edge(u, v, g.getDistanceBetweenPoints(u, v)));
-				visited.add(u);
-			}
-		}
-
-		return hamiltonianTour;
-	}
-
-	Map<Integer, Map<Integer, Double>> util(List<Edge> edges) {
-		Map<Integer, Map<Integer, Double>> map = new HashMap<>();
-		for (Edge edge : edges) {
-			Map<Integer, Double> hm;
-			if (map.get(edge.from) == null)
-				hm = new HashMap<>();
-			else
-				hm = map.get(edge.from);
-			hm.put(edge.to, hm.getOrDefault(edge.to, edge.weight));
-			map.put(edge.from, hm);
-		}
-		for (Edge edge : edges) {
-			Map<Integer, Double> hm;
-			if (map.get(edge.to) == null)
-				hm = new HashMap<>();
-			else
-				hm = map.get(edge.to);
-			hm.put(edge.from, hm.getOrDefault(edge.from, edge.weight));
-			map.put(edge.to, hm);
-		}
-		System.out.println(map);
-		return map;
-	}
+//	public List<Edge> shortcutTour(List<Integer> eulerianTour, List<Edge> edges, Graph g) {
+//		List<Edge> hamiltonianTour = new ArrayList<>();
+//		Set<Integer> visited = new HashSet<>();
+//		Map<Integer, Map<Integer, Double>> map = util(edges);
+//		System.out.println(map);
+//		for (int i = 0; i < eulerianTour.size() - 1; i++) {
+//			int u = eulerianTour.get(i);
+//			int v = eulerianTour.get(i + 1);
+//			if (!visited.contains(u)) {
+//				System.out.println(u + "  -  " + v + " " + g.getDistanceBetweenPoints(u, v));
+//				hamiltonianTour.add(new Edge(u, v, g.getDistanceBetweenPoints(u, v)));
+//				visited.add(u);
+//			}
+//		}
+//
+//		return hamiltonianTour;
+//	}
 
 	public static List<Integer> findEulerianTour(Graph g, int start) {
 		List<List<Integer>> adjList = g.getAdjList();
@@ -293,7 +305,7 @@ public class MinWeightService {
 		return tour;
 	}
 
-	static TspTour getTspPath(int start, Graph g, List<Integer> tour) {
+	public TspTour getTspPath(int start, Graph g, List<Integer> tour) {
 		TspTour tspTour = new TspTour();
 		Graph tspGraph = new Graph(g.getV());
 		double tspWeight = 0.0;
