@@ -50,7 +50,6 @@ public class ExcelFetchPointService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("Line 53");
 		return list;
 	}
 }
