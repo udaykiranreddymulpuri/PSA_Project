@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.springframework.stereotype.Service;
+
 import edu.neu.coe.csye6205.tsp.model.Graph;
 import edu.neu.coe.csye6205.tsp.model.TspTour;
 
-
+@Service
 public class SimulatedAnnealingService {
 
 	public static TspTour simulatedAnnealing(TspTour tspTour, double temp, double r, Graph g){
