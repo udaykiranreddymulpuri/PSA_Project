@@ -120,7 +120,7 @@ class TspApplicationTests {
 		TspTour tsp=new TspTour();
 		tsp.setTour(tspTour);
 		tsp.setLength(6);
-		TspTour tsp2optTour=opt2Service.twoOpt(tsp, dto.getGraph());
+		TspTour tsp2optTour=opt2Service.twoOptTour(tsp, dto.getGraph());
 		assertTrue(tsp2optTour.getLength() <= 6 && new HashSet<>(tsp2optTour.getTour()).size() == 5
 				&& tsp2optTour.getTour().get(0) == tsp2optTour.getTour().get(tsp2optTour.getTour().size() - 1));
 	}
@@ -132,7 +132,7 @@ class TspApplicationTests {
 		TspTour tsp=new TspTour();
 		tsp.setTour(tspTour);
 		tsp.setLength(6);
-		TspTour tsp3optTour=opt2Service.twoOpt(tsp, dto.getGraph());
+		TspTour tsp3optTour=opt3Service.threeOptTour(tsp, dto.getGraph());
 		assertTrue(tsp3optTour.getLength() <= 6 && new HashSet<>(tsp3optTour.getTour()).size() == 5
 				&& tsp3optTour.getTour().get(0) == tsp3optTour.getTour().get(tsp3optTour.getTour().size() - 1));
 	}

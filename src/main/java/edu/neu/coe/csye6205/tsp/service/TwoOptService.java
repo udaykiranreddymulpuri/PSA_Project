@@ -12,7 +12,7 @@ import edu.neu.coe.csye6205.tsp.model.TspTour;
 @Service
 public class TwoOptService {
 
-    public  TspTour twoOpt(TspTour tspTour, Graph g) {
+    public  TspTour twoOptTour(TspTour tspTour, Graph g) {
         boolean improved = true;
         List<Integer> tour = new ArrayList<>(tspTour.getTour());
         int n = tour.size();
