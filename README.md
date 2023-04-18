@@ -1,7 +1,5 @@
 <h2>INFO6250 - Program Structures and Algorithms</h2>
-<br>
 <p>Project-Traveling Salesman</p><br>
-<br>
 <h4>Aim</h4><br>
 <p>The aim of the project is to solve the Travelling Salesman Problem, which is an NP-hard problem, using the Christofides algorithm and optimizing further with tactical and strategic optimizations<p><br>
 
