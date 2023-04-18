@@ -14,7 +14,7 @@ import edu.neu.coe.csye6205.tsp.model.TspTour;
 @Service
 public class SimulatedAnnealingService {
 
-	public static TspTour simulatedAnnealing(TspTour tspTour, double temp, double r, Graph g){
+	public static TspTour simulatedAnnealingTour(TspTour tspTour, double temp, double r, Graph g){
         List<Integer> tour = new ArrayList<>(tspTour.getTour());
         List<Integer> bestTour = new ArrayList<>(tspTour.getTour());
         double bestLength = tspTour.getLength();

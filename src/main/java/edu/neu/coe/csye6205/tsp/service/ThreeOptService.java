@@ -10,7 +10,7 @@ import edu.neu.coe.csye6205.tsp.model.TspTour;
 
 @Service
 public class ThreeOptService {
-    public TspTour threeOpt(TspTour tspTour, Graph g) {
+    public TspTour threeOptTour(TspTour tspTour, Graph g) {
         TspTour bestTour = tspTour;
         boolean improved = true;
         while (improved) {
