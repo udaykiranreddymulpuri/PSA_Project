@@ -85,6 +85,8 @@ public class MinWeightService {
 //		List<Route> routes = routeRepo.findAll();
 		System.out.println("****** Start of Execution *******");
 		System.out.println("No of Vertexs " + this.v);
+		
+		
 		System.out.println("*********************");
 		Timestamp startTime = new Timestamp(System.currentTimeMillis());
 		MstTour mstTour = minimumSpanningTree(edges);
@@ -97,6 +99,8 @@ public class MinWeightService {
 			vertexList.add(v);
 		});
 		System.out.println("*********************");
+		
+		
 		System.out.println("List of Odd vertices ");
 		System.out.println(vertexList);
 		System.out.println("*********************");
