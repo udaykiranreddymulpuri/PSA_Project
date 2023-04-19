@@ -29,7 +29,7 @@ public class Vertex {
 
 	@Override
 	public String toString() {
-		return "Vertex [vertexId=" + vertex + ", crimeId=" + crimeId + "]";
+		return String.format("vertexId = %-3s CrimeId = %3s", vertex, crimeId);
 	}
 	
 	

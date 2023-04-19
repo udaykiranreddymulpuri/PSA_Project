@@ -43,7 +43,7 @@ public class MinWeightService {
 
 	@Autowired
 	VertexUtil vertexUtil;
-	
+
 	@Autowired
 	SimulatedAnnealingService simulatedAnnealingService;
 
@@ -88,8 +88,8 @@ public class MinWeightService {
 		System.out.println("***************************************************************");
 		Timestamp startTime = new Timestamp(System.currentTimeMillis());
 		MstTour mstTour = minimumSpanningTree(edges);
-		System.out.println("MST Execution Time in Millisecs: "+
-				(new Timestamp(System.currentTimeMillis()).getTime()-startTime.getTime()) );
+		System.out.println("MST Execution Time in Millisecs: "
+				+ (new Timestamp(System.currentTimeMillis()).getTime() - startTime.getTime()));
 		System.out.println();
 		List<Integer> oddver = oddDegreeVertices(mstTour.getEdges());
 		oddver.forEach(oddVer -> {
@@ -97,15 +97,14 @@ public class MinWeightService {
 			vertexList.add(v);
 		});
 		System.out.println("*********************");
-		
-		
+
 		System.out.println("List of Odd vertices ");
 		System.out.println(vertexList);
 		System.out.println("***************************************************************");
 		startTime = new Timestamp(System.currentTimeMillis());
 		List<Edge> minWeightMatch = findMinimumWeightMatching(oddver, graph);
-		System.out.println("findMinimumWeightMatching Execution Time in Millisecs: "+
-				(new Timestamp(System.currentTimeMillis()).getTime()-startTime.getTime()) );
+		System.out.println("findMinimumWeightMatching Execution Time in Millisecs: "
+				+ (new Timestamp(System.currentTimeMillis()).getTime() - startTime.getTime()));
 //		System.out.println("List of min weight matching pairs "+minWeightMatch);
 //		System.out.println(minWeightMatch);
 //		System.out.println("*********************");
@@ -116,8 +115,8 @@ public class MinWeightService {
 		});
 		startTime = new Timestamp(System.currentTimeMillis());
 		List<Integer> eulerianTour = findEulerianTour(mstAndminWeightCombinedGraph, 0);
-		System.out.println("findEulerianTour Execution Time in Millisecs: "+
-				(new Timestamp(System.currentTimeMillis()).getTime()-startTime.getTime()) );
+		System.out.println("findEulerianTour Execution Time in Millisecs: "
+				+ (new Timestamp(System.currentTimeMillis()).getTime() - startTime.getTime()));
 		System.out.println("  Eulerian Tour ");
 		List<Vertex> EulerianVertexTour = new ArrayList<>();
 		eulerianTour.stream().forEach(e -> {
@@ -128,55 +127,78 @@ public class MinWeightService {
 		System.out.println("***************************************************************");
 		startTime = new Timestamp(System.currentTimeMillis());
 		TspTour tsp = getTspPath(0, graph, eulerianTour);
-		System.out.println("getTspPath Execution Time in Millisecs: "+
-				(new Timestamp(System.currentTimeMillis()).getTime()-startTime.getTime()) );
+		System.out.println("getTspPath Execution Time in Millisecs: "
+				+ (new Timestamp(System.currentTimeMillis()).getTime() - startTime.getTime()));
 		List<Vertex> tspVertexTour = new ArrayList<>();
 		tsp.getTour().stream().forEach(e -> {
 			Vertex v = new Vertex(e, vertexMap.get(e));
 			tspVertexTour.add(v);
 		});
-		System.out.println(" Tsp Weight in meters" + tsp.getLength()*1000);
-		System.out.println(" Tsp Tour " + tspVertexTour);
+		System.out.println(" Tsp Weight in meters " + tsp.getLength() * 1000);
+		System.out.println("********************   Tsp Tour *******************************");
+		System.out.println(printUtil(tspVertexTour));
 		System.out.println("***************************************************************");
 		startTime = new Timestamp(System.currentTimeMillis());
 		TspTour tsp2optTour = opt2Service.twoOptTour(tsp, graph);
-		System.out.println("2Opt Execution Time in Millisecs: "+
-				(new Timestamp(System.currentTimeMillis()).getTime()-startTime.getTime()) );
+		System.out.println("2Opt Execution Time in Millisecs: "
+				+ (new Timestamp(System.currentTimeMillis()).getTime() - startTime.getTime()));
 		List<Vertex> opt2VertexTour = new ArrayList<>();
 		tsp2optTour.getTour().stream().forEach(e -> {
 			Vertex v = new Vertex(e, vertexMap.get(e));
 			opt2VertexTour.add(v);
 		});
-		System.out.println(" 2 Opt Tsp Weight in meters " + tsp2optTour.getLength()*1000);
-		System.out.println(" 2 Opt Tsp Tour " + opt2VertexTour);
+		System.out.println(" 2 Opt Tsp Weight in meters " + tsp2optTour.getLength() * 1000);
+		System.out.println("******************** 2 Opt Tsp Tour ***************************");
+		System.out.println(printUtil(opt2VertexTour));
 		System.out.println("***************************************************************");
 		startTime = new Timestamp(System.currentTimeMillis());
 		TspTour tsp3optTour = opt3Service.threeOptTour(tsp, graph);
-		System.out.println("3Opt Execution Time in Millisecs: "+
-				(new Timestamp(System.currentTimeMillis()).getTime()-startTime.getTime()) );
+		System.out.println("3Opt Execution Time in Millisecs: "
+				+ (new Timestamp(System.currentTimeMillis()).getTime() - startTime.getTime()));
 		List<Vertex> opt3VertexTour = new ArrayList<>();
 		tsp3optTour.getTour().stream().forEach(e -> {
 			Vertex v = new Vertex(e, vertexMap.get(e));
 			opt3VertexTour.add(v);
 		});
-		System.out.println(" 3 Opt Tsp Weight in meters" + tsp3optTour.getLength()*1000);
-		System.out.println(" 3 Opt Tsp Tour " + opt3VertexTour);
+		System.out.println(" 3 Opt Tsp Weight in meters " + tsp3optTour.getLength() * 1000);
+		System.out.println("******************** 3 Opt Tsp Tour ***************************");
+		System.out.println(printUtil(opt3VertexTour));
 		System.out.println("***************************************************************");
 		startTime = new Timestamp(System.currentTimeMillis());
-		TspTour tspSimulated= simulatedAnnealingService.simulatedAnnealingTour(tsp, 2, 0.95, graph);
-		System.out.println("Simulated Annealing Opt Execution Time in Millisecs: "+
-				(new Timestamp(System.currentTimeMillis()).getTime()-startTime.getTime()) );
+		TspTour tspSimulated = simulatedAnnealingService.simulatedAnnealingTour(tsp, 2, 0.95, graph);
+		System.out.println("Simulated Annealing Opt Execution Time in Millisecs: "
+				+ (new Timestamp(System.currentTimeMillis()).getTime() - startTime.getTime()));
 		List<Vertex> simulatedAnnealingVertexTour = new ArrayList<>();
 		tspSimulated.getTour().stream().forEach(e -> {
 			Vertex v = new Vertex(e, vertexMap.get(e));
 			simulatedAnnealingVertexTour.add(v);
 		});
-		System.out.println(" Simulated Annealing Tsp Weight " + tspSimulated.getLength());
+		System.out.println(" Simulated Annealing Tsp Weight in meters " + (tspSimulated.getLength()) * 1000);
 		System.out.println(" Simulated Annealing Tsp Tour " + simulatedAnnealingVertexTour);
+		System.out.println("****************** Simulated Annealing Tsp Tour *************************");
+		System.out.println(printUtil(simulatedAnnealingVertexTour));
 		System.out.println("Execution Time in Minutes: "
 				+ (new Timestamp(System.currentTimeMillis()).getTime() - start.getTime()) / 60000);
 		System.out.println("****** End of Execution *******");
 
+	}
+
+	public String printUtil(List<Vertex> tspVertexTour) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < tspVertexTour.size() - 4; i = i + 4) {
+
+		}
+		for (int i = 0; i < tspVertexTour.size(); i = i + 4) {
+			sb.append(tspVertexTour.get(i));
+			if (i + 1 < tspVertexTour.size())
+				sb.append(tspVertexTour.get(i + 1));
+			if (i + 2 < tspVertexTour.size())
+				sb.append(tspVertexTour.get(i + 2));
+			if (i + 3 < tspVertexTour.size())
+				sb.append(tspVertexTour.get(i + 3));
+			sb.append("\n");
+		}
+		return sb.toString();
 	}
 
 	public MstTour minimumSpanningTree(List<Edge> edges) {
@@ -209,7 +231,7 @@ public class MinWeightService {
 				uf.union(edge.from, edge.to);
 			}
 		}
-		System.out.println("Minimum Spaninng Tree weight in meters " + weight*1000);
+		System.out.println("Minimum Spaninng Tree weight in meters " + weight * 1000);
 		MstTour mstTour = new MstTour(mst, weight);
 		return mstTour;
 	}
