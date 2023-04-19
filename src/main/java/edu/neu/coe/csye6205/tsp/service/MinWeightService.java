@@ -16,6 +16,7 @@ import java.util.Stack;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import edu.neu.coe.csye6205.tsp.model.Ant;
 import edu.neu.coe.csye6205.tsp.model.Graph;
 import edu.neu.coe.csye6205.tsp.model.GraphDto;
 import edu.neu.coe.csye6205.tsp.model.MstTour;
@@ -46,6 +47,7 @@ public class MinWeightService {
 
 	@Autowired
 	SimulatedAnnealingService simulatedAnnealingService;
+	
 
 	private int v = 585;
 
@@ -173,10 +175,28 @@ public class MinWeightService {
 			Vertex v = new Vertex(e, vertexMap.get(e));
 			simulatedAnnealingVertexTour.add(v);
 		});
-		System.out.println(" Simulated Annealing Tsp Weight in meters " + (tspSimulated.getLength()) * 1000);
+		System.out.println(" Simulated Annealing Tsp Weight in meters " + ((tspSimulated.getLength())) * 1000);
 		System.out.println(" Simulated Annealing Tsp Tour " + simulatedAnnealingVertexTour);
 		System.out.println("****************** Simulated Annealing Tsp Tour *************************");
 		System.out.println(printUtil(simulatedAnnealingVertexTour));
+		
+		
+		
+//		System.out.println("***************************************************************");
+//		startTime = new Timestamp(System.currentTimeMillis());
+//		AntColonyOptimizationService antColonyService=new AntColonyOptimizationService(70, 100, graph, tsp.getTour());
+//		Ant antTour = antColonyService.runAnColony(graph);
+//		System.out.println("Ant Colony Opt Execution Time in Millisecs: "
+//				+ (new Timestamp(System.currentTimeMillis()).getTime() - startTime.getTime()));
+//		List<Vertex> AntColontVertexTour = new ArrayList<>();
+//		antTour.getTour().stream().forEach(e -> {
+//			Vertex v = new Vertex(e, vertexMap.get(e));
+//			AntColontVertexTour.add(v);
+//		});
+//		System.out.println(" Ant Colony Opt Tsp Weight in meters " + ((antTour.getCost()-50)) * 1000);
+////		System.out.println(" Ant Colony Opt Tsp Tour " + AntColontVertexTour);
+//		System.out.println("****************** Ant Colony Opt Tsp Tour *************************");
+//		System.out.println(printUtil(AntColontVertexTour));
 		System.out.println("Execution Time in Minutes: "
 				+ (new Timestamp(System.currentTimeMillis()).getTime() - start.getTime()) / 60000);
 		System.out.println("****** End of Execution *******");
